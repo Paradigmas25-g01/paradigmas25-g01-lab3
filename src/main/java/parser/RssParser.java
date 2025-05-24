@@ -16,10 +16,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import feed.Article;
 import httpRequest.HttpRequester;
 import subscription.SingleSubscription;
+import org.xml.sax.InputSource;
+import java.io.StringReader;
 
 /**
  * Esta clase implementa un parser para feeds de tipo RSS (formato XML).
@@ -88,7 +91,6 @@ public class RssParser extends GeneralParser {
           DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
           Date date = formatter.parse(pubDate);
 
-
           // uso jsoup para parsea el posible html (solo en algunos casos)
           org.jsoup.nodes.Document d = Jsoup.parse(description);
 
@@ -104,6 +106,58 @@ public class RssParser extends GeneralParser {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  // Sacada de stack overflow
+  public static Document loadXMLFromString(String xml) throws Exception {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    InputSource is = new InputSource(new StringReader(xml));
+    return builder.parse(is);
+  }
+
+  // Hago una funcion pura que lea el XML como string y devuelva una lista de
+  // articulos
+  public List<Article> parseRssFromString(String xmlString) {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    // La lista que devuelvo
+    List<Article> listArt = new ArrayList<Article>();
+
+    try {
+      DocumentBuilder docBuilder = factory.newDocumentBuilder();
+      Document doc = loadXMLFromString(xmlString);
+      NodeList items = doc.getElementsByTagName("item");
+
+      for (int i = 0; i < items.getLength(); i++) {
+        Node itemNode = items.item(i);
+
+        if (itemNode.getNodeType() == Node.ELEMENT_NODE) {
+          Element item = (Element) itemNode;
+
+          String title = item.getElementsByTagName("title").item(0).getTextContent();
+          String description = item.getElementsByTagName("description").item(0).getTextContent().trim();
+          String pubDate = item.getElementsByTagName("pubDate").item(0).getTextContent();
+          String link = item.getElementsByTagName("link").item(0).getTextContent();
+
+          DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
+          Date date = formatter.parse(pubDate);
+
+          // uso jsoup para parsea el posible html (solo en algunos casos)
+          org.jsoup.nodes.Document d = Jsoup.parse(description);
+
+          // me fijo si hay un parrafo con alguna descripcion
+          org.jsoup.nodes.Element snippet = d.selectFirst("p.medium-feed-snippet");
+          description = (snippet != null) ? snippet.text() : d.text();
+
+          Article article = new Article(title, description, date, link);
+          listArt.add(article); // Lo agrego a la lista
+        }
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return listArt;
   }
 
   /**

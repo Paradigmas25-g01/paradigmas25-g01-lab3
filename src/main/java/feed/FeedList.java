@@ -4,6 +4,7 @@ import parser.GeneralParser;
 import parser.RedditParser;
 import parser.RssParser;
 import parser.SubscriptionParser;
+import scala.collection.View.Single;
 import subscription.SingleSubscription;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,66 @@ public class FeedList {
     this.feedList = new ArrayList<Feed>();
   }
 
+  // Toma una SingleSubscription y devuelve un feed
+  // static porque es una funcion pura
+  static public Feed buildFeed(SingleSubscription singSub) {
+    Feed feed = null;
+
+    String type = singSub.getUrlType().toLowerCase();
+    if (type.equals("rss") || type.equals("reddit")) {
+      String urlFormat = singSub.getUrl();
+      for (String topic : singSub.getUrlParams()) {
+        try {
+          // Formo la URL con el topic
+          String finalUrl = String.format(urlFormat, topic);
+
+          // Obtengo el contenido del feed (articulos) como XML o JSON
+          HttpRequester requester = new HttpRequester();
+          String rawFeed = requester.getFeed(finalUrl);
+          
+
+          // Declaro un archivo temporal
+          java.nio.file.Path tempFile;
+
+          /* CASO FEED RSS */
+          if (type.equals("rss")) {
+            tempFile = java.nio.file.Files.createTempFile("rssFeed", ".xml"); // inicializo el archivo temp
+            RssParser parser = new RssParser(); // inicializo el parser
+            java.nio.file.Files.writeString(tempFile, rawFeed); // pongo el contenido en el archivo
+            parser.parseFile(tempFile.toString()); // parseo el archivo
+
+            String siteName = singSub.getUrlType().toUpperCase() + " - " + topic;
+            feed = new Feed(siteName);
+
+            for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
+              feed.addArticle(article);
+            }
+          }
+
+          /* CASO FEED REDDIT */
+          else {
+            tempFile = java.nio.file.Files.createTempFile("redditFeed", ".json");
+            RedditParser parser = new RedditParser(); // A implementar
+            java.nio.file.Files.writeString(tempFile, rawFeed);
+            parser.parseFile(tempFile.toString());
+
+            String siteName = singSub.getUrlType().toUpperCase() + " - " + topic;
+            feed = new Feed(siteName);
+
+            for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
+              feed.addArticle(article);
+            }
+          }
+        } catch (Exception e) {
+          System.err.println("Error al procesar el feed RSS para el topic: " + topic);
+          e.printStackTrace();
+        }
+      }
+    }
+
+    return feed;
+  }
+
   /**
    * Construye y guarda la lista de feeds a partir de las suscripciones
    * proporcionadas por el parser y utilizando el requester para obtener
@@ -41,11 +102,12 @@ public class FeedList {
    * @param requester objeto HttpRequester para obtener el contenido de los feeds
    *                  RSS
    */
-  public void BuildFeeds(SubscriptionParser subparser, HttpRequester requester) {
+  public void BuildFeeds(List<SingleSubscription> subsList) {
+
     feedList.clear();
 
     // para cada suscripcion individual
-    for (SingleSubscription subscription : subparser.getSubscriptions()) {
+    for (SingleSubscription subscription : subsList) {
 
       // Si es RSS o REDDIT entonces:
       String type = subscription.getUrlType().toLowerCase();
@@ -61,43 +123,44 @@ public class FeedList {
             String finalUrl = String.format(urlFormat, topic);
 
             // Obtengo el contenido del feed (articulos) como XML o JSON
+            HttpRequester requester = new HttpRequester();
             String rawFeed = requester.getFeed(finalUrl);
 
             // Declaro un archivo temporal
             java.nio.file.Path tempFile;
 
-            /*CASO FEED RSS */
+            /* CASO FEED RSS */
             if (type.equals("rss")) {
               tempFile = java.nio.file.Files.createTempFile("rssFeed", ".xml"); // inicializo el archivo temp
               RssParser parser = new RssParser(); // inicializo el parser
-              java.nio.file.Files.writeString(tempFile, rawFeed);  // pongo el contenido en el archivo
+              java.nio.file.Files.writeString(tempFile, rawFeed); // pongo el contenido en el archivo
               parser.parseFile(tempFile.toString()); // parseo el archivo
 
               String siteName = subscription.getUrlType().toUpperCase() + " - " + topic;
               Feed feed = new Feed(siteName);
 
               for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
-              feed.addArticle(article);}
+                feed.addArticle(article);
+              }
 
               this.feedList.add(feed); // agrego el feed a la feedlist
             }
-            /*CASO FEED REDDIT */
+            /* CASO FEED REDDIT */
             else {
               tempFile = java.nio.file.Files.createTempFile("redditFeed", ".json");
-              RedditParser parser = new RedditParser();  // A implementar
+              RedditParser parser = new RedditParser(); // A implementar
               java.nio.file.Files.writeString(tempFile, rawFeed);
               parser.parseFile(tempFile.toString());
 
               String siteName = subscription.getUrlType().toUpperCase() + " - " + topic;
               Feed feed = new Feed(siteName);
-            
+
               for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
-              feed.addArticle(article); }
+                feed.addArticle(article);
+              }
 
               this.feedList.add(feed); // agrego el feed a la feedlist
             }
-            
-
 
           } catch (Exception e) {
             System.err.println("Error al procesar el feed RSS para el topic: " + topic);

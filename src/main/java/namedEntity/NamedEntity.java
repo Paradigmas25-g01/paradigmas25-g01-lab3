@@ -54,6 +54,7 @@ public class NamedEntity {
    * @return la categoria
    */
   public String getCategory() {
+    System.err.println("100200300aaa: " + category.getCategoria());
     return category.getCategoria();
   }
 

@@ -1,5 +1,6 @@
 package feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,7 +13,7 @@ import utils.AnsiColors;
  * Clase que modela el contenido de un articulo (por ejemplo, un item en un feed
  * RSS).
  */
-public class Article {
+public class Article implements Serializable {
 
   /** Titulo del articulo */
   private String title;
@@ -167,6 +168,29 @@ public class Article {
         }
       }
     }
+  }
+
+  public static List<NamedEntity> buildListOfNamedEntities(Article a, Heuristic h) {
+    List<NamedEntity> lne = new ArrayList<NamedEntity>();
+    String text = a.getTitle() + " " + a.getText();
+
+    String charsToRemove = ".,;:()'!?\n";
+    for (char c : charsToRemove.toCharArray()) {
+      text = text.replace(String.valueOf(c), "");
+    }
+
+    for (String s : text.split(" ")) {
+      if (h.isEntity(s)) {
+        NamedEntity ne = a.getNamedEntity(s);
+        if (ne == null) {
+          lne.add(new NamedEntity(s, null, null, 1));
+        } else {
+          ne.incFrequency();
+        }
+      }
+    }
+
+    return lne;
   }
 
   /**

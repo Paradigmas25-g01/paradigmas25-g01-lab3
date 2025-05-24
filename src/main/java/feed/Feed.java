@@ -1,5 +1,6 @@
 package feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * Clase que modela la lista de articulos de un determinado feed.
  */
-public class Feed {
+public class Feed implements Serializable {
 
   /** Nombre del sitio o fuente del feed */
   String siteName;
@@ -107,6 +108,21 @@ public class Feed {
     for (Article a : this.getArticleList()) {
       a.prettyPrint();
     }
+  }
+
+  // Mergea dos feeds
+  // Mantiene los datos del feed 1
+  static public Feed mergeFeeds(Feed feed1, Feed feed2) {
+    Feed f = new Feed(feed1.getSiteName());
+
+    for (Article a : feed1.getArticleList()) {
+      f.addArticle(a);
+    }
+    for (Article a : feed2.getArticleList()) {
+      f.addArticle(a);
+    }
+
+    return f;
   }
 
   /**

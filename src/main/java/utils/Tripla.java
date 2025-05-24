@@ -11,4 +11,5 @@ public class Tripla<A, B, C> {
     this.second = second;
     this.third = third;
   }
+
 }

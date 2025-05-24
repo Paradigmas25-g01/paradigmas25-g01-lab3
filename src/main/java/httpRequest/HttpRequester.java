@@ -36,7 +36,10 @@ public class HttpRequester {
     HttpResponse<String> response = null;
 
     try {
-      request = HttpRequest.newBuilder(new URI(urlFeed)).GET().build();
+      request = HttpRequest.newBuilder(new URI(urlFeed))
+          .GET()
+          .build();
+
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (URISyntaxException | IOException | InterruptedException e) {
       // INFO: Mejorar handeleo
