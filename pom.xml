@@ -10,8 +10,8 @@
   <version>1.0.0</version>                                           <!-- Version del proyecto -->
 
   <properties>
-    <maven.compiler.source>24</maven.compiler.source>
-    <maven.compiler.target>24</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source> <!-- Paso de 24 -> 17 --> 
+    <maven.compiler.target>17</maven.compiler.target> <!-- para que ande spark... -->
   </properties>
 
   <!-- 2) Dependencias -->
@@ -44,7 +44,6 @@
         <artifactId>fliptables</artifactId>
       <version>1.1.1</version>
     </dependency>
-
-
   </dependencies>
+
 </project>
