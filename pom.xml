@@ -14,7 +14,7 @@
     <maven.compiler.target>17</maven.compiler.target> <!-- para que ande spark... -->
   </properties>
 
-  <!-- 2) Dependencias -->
+  <!-- 2) Dependencias, lo descarga de internet (repo de maven) y lo guarda en ~/.m2 -->
   <dependencies>
     <!-- JUnit para tests, muy bobina -->
     <dependency>
@@ -24,7 +24,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- org.json, lo descarga de internet (repo de maven) y lo guarda en ~/.m2 -->
+    <!-- org.json  -->
     <dependency>
       <groupId>org.json</groupId>
         <artifactId>json</artifactId>
@@ -44,6 +44,20 @@
         <artifactId>fliptables</artifactId>
       <version>1.1.1</version>
     </dependency>
-  </dependencies>
 
+    <!-- Apache spark core -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_2.13</artifactId>
+      <version>3.5.5</version>
+    </dependency>
+
+    <!-- Apache spark sql -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_2.13</artifactId>
+      <version>3.5.5</version>
+    </dependency>
+
+  </dependencies>
 </project>
