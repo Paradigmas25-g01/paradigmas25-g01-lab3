@@ -194,7 +194,6 @@ public class EntityCountTable {
   }
 
   // ESTO ES LA PAPA
-  // En EntityCountTable.java
 public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
     List<Tripla> triplista = new ArrayList<Tripla>();
     String name = null;
@@ -208,14 +207,10 @@ public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
             if (ne.getFrequency() > 0) {
                 name = ne.getName();
 
-                if (campo.getValor().equals("category")) {
-                    field = ne.getCategory();
-                } else {
-                    field = ne.getTopic();
-                }
+                field = campo.getValor().equals("category") ? ne.getCategory() : ne.getTopic() ;
                 frequency = ne.getFrequency();
 
-                if (field != null && !field.equals("UnknownCategory") && !field.equals("UnknownTopic")) {
+                if (field != null) {
                     Tripla tripla = new Tripla(name, field, frequency);
                     triplista.add(tripla);
                 }
