@@ -13,7 +13,6 @@ public class Category implements Serializable { // POJO, plain old java object, 
   }
 
   public String getCategoria() {
-    System.err.println("100200300aaa: " );
     return categoria != null ? categoria : "null";
   }
 

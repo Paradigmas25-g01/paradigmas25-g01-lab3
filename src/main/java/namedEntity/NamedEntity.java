@@ -56,7 +56,6 @@ public class NamedEntity implements Serializable{
    * @return la categoria
    */
   public String getCategory() {
-    System.err.println("100200300aaa: " + category.getCategoria());
     String cat =  category.getCategoria();
     return (cat != null ? cat : "null");
   }

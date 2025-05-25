@@ -65,6 +65,7 @@ public class FeedReaderMain {
     //
     SubscriptionParser subparser = new SubscriptionParser();
     subparser.parseFile("config/subscriptions.json");
+    //subparser.parseFile("config/subscriptionsLarge.json");
 
     // INFO: 0.0
     // Crea una sesión de Spark en modo local (usa todos los núcleos de la máquina)
@@ -91,8 +92,11 @@ public class FeedReaderMain {
     // Notar que no uso reduce porque estaria perdiendo la nocion de que cada
     // feed habla de un siteName distinto... Collect los agrupa en una lista (Array)
     List<Feed> feedList = feed.collect();
+    for(Feed elem : feedList){
+      elem.prettyPrint();
+    }
 
-    System.out.println(AnsiColors.CYAN + feedList.toString() + AnsiColors.RESET);
+    //System.out.println(AnsiColors.CYAN + feedList.toString() + AnsiColors.RESET);
 
     // INFO: 2.1
     // RDD con todos mis feeds obtenidos tras ejecutar las funciones map
