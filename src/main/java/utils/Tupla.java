@@ -1,7 +1,10 @@
 package utils;
 
 // Definida como tipo generico
-public class Tupla<A, B> {
+
+import java.io.Serializable;
+
+public class Tupla<A, B> implements Serializable{
     public final A first;
     public final B second;
 

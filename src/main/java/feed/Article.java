@@ -171,27 +171,46 @@ public class Article implements Serializable {
   }
 
   public static List<NamedEntity> buildListOfNamedEntities(Article a, Heuristic h) {
-    List<NamedEntity> lne = new ArrayList<NamedEntity>();
-    String text = a.getTitle() + " " + a.getText();
+  List<NamedEntity> lne = new ArrayList<>();
+  String text = a.getTitle() + " " + a.getText();
 
-    String charsToRemove = ".,;:()'!?\n";
-    for (char c : charsToRemove.toCharArray()) {
-      text = text.replace(String.valueOf(c), "");
-    }
-
-    for (String s : text.split(" ")) {
-      if (h.isEntity(s)) {
-        NamedEntity ne = a.getNamedEntity(s);
-        if (ne == null) {
-          lne.add(new NamedEntity(s, null, null, 1));
-        } else {
-          ne.incFrequency();
-        }
-      }
-    }
-
-    return lne;
+  String charsToRemove = ".,;:()'!?\n";
+  for (char c : charsToRemove.toCharArray()) {
+    text = text.replace(String.valueOf(c), "");
   }
+
+  for (String s : text.split(" ")) {
+        if (h.isEntity(s)) {
+            NamedEntity existingNeInList = findInList(lne, s);
+
+            if (existingNeInList == null) {
+                NamedEntity entityFromHeuristic = h.getNamedEntity(s);
+
+                if (entityFromHeuristic != null) {
+                    NamedEntity newNe = new NamedEntity(
+                        entityFromHeuristic.getName(),
+                        entityFromHeuristic.getCategoryObject(),
+                        entityFromHeuristic.getTopicObject(),
+                        1
+                    );
+                    lne.add(newNe);
+                }
+            } else {
+                existingNeInList.incFrequency();
+            }
+        }
+    }
+    return lne;
+}
+private static NamedEntity findInList(List<NamedEntity> list, String name) {
+  for (NamedEntity ne : list) {
+    if (ne.getName().equals(name)) {
+      return ne;
+    }
+  }
+  return null;
+}
+
 
   /**
    * Imprime de forma legible el contenido del articulo.

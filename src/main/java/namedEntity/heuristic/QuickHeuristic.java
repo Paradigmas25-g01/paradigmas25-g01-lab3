@@ -1,8 +1,9 @@
 package namedEntity.heuristic;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class QuickHeuristic extends Heuristic {
+public class QuickHeuristic extends Heuristic implements Serializable {
 
   private static List<String> keyWords = List.of(
       "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you",

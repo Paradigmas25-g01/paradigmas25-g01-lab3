@@ -194,27 +194,36 @@ public class EntityCountTable {
   }
 
   // ESTO ES LA PAPA
-  public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
+  // En EntityCountTable.java
+public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
     List<Tripla> triplista = new ArrayList<Tripla>();
-    Tripla tripla = null;
     String name = null;
     String field = null;
     Integer frequency = null;
 
     for (Article art : f.getArticleList()) {
-      art.computeNamedEntities(h);
-      for (NamedEntity ne : art.getNamedEntitiesList()) {
-        if (ne.getFrequency() > 0) {
-          name = ne.getName();
-          field = (campo.getValor().equals("category")) ? ne.getCategory() : ne.getTopic();
-          frequency = ne.getFrequency();
-          tripla = new Tripla(name, field, frequency);
-          triplista.add(tripla);
+        List<NamedEntity> namedEntitiesOfArticle = Article.buildListOfNamedEntities(art, h);
+
+        for (NamedEntity ne : namedEntitiesOfArticle) {
+            if (ne.getFrequency() > 0) {
+                name = ne.getName();
+
+                if (campo.getValor().equals("category")) {
+                    field = ne.getCategory();
+                } else {
+                    field = ne.getTopic();
+                }
+                frequency = ne.getFrequency();
+
+                if (field != null && !field.equals("UnknownCategory") && !field.equals("UnknownTopic")) {
+                    Tripla tripla = new Tripla(name, field, frequency);
+                    triplista.add(tripla);
+                }
+            }
         }
-      }
     }
     return triplista;
-  }
+}
 
   // Dicconario papa
   // Persona 5
