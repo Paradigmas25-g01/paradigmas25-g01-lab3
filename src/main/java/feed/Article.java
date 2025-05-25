@@ -221,6 +221,20 @@ private static NamedEntity findInList(List<NamedEntity> list, String name) {
     String CYANB = AnsiColors.CYAN_BOLD;
     String GREEN = AnsiColors.GREEN;
     String CYAN = AnsiColors.CYAN;
+
+    String text = this.getText();
+
+
+    // Reciclo funcion de valen je
+    int maxLength = 300;
+    int cutIndex = text.indexOf("\n"); // busco la posicion del primer salto de linea
+    if (cutIndex == -1 || cutIndex > maxLength) { // si no hay salto de linea antes del maxlength cortamos en el maxlength
+        cutIndex = Math.min(text.length(), maxLength);
+    }
+    if (text.length() > cutIndex) { // si hay un salto de linea antes del maxlength, lo cortamos luego del salto
+        text = text.substring(0, cutIndex).trim() + "...";
+    }
+
     System.out.println(BLUE);
     System.out
         .println("*********************************************************************************");
@@ -231,7 +245,7 @@ private static NamedEntity findInList(List<NamedEntity> list, String name) {
     System.out.println(CYANB);
     System.out.println("Link: " + RESET + this.getLink());
     System.out.println(CYANB);
-    System.out.println("Text: " + RESET + this.getText());
+    System.out.println("Text: " + RESET + text);
     System.out.println(BLUE);
     System.out
         .println("*******************************************************************************************");
