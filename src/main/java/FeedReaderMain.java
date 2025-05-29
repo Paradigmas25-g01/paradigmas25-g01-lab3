@@ -135,32 +135,5 @@ public class FeedReaderMain {
     // INFO: IMPORTANTISIMO
     sc.close();
     spark.stop();
-
-    // ----------------------------------------------------------
-    // Printeamos Named Entities (si hay flags)
-    // ----------------------------------------------------------
-
-    // inicializo la EntityCountTable
-    // EntityCountTable ECT = new EntityCountTable();
-    // boolean printETC = false;
-
-    // eleccion de euristica y creacion de la tabla
-    // if (argumentos.size() == 1 || (argumentos.size() == 2 &&
-    // argumentos.contains("-qh"))) {
-    // QuickHeuristic QH = new QuickHeuristic();
-    // ECT.generateTable(feedsl.getFeedList(), QH);
-    // printETC = true;
-    // } else if (argumentos.size() == 2 && argumentos.contains("-rh")) {
-    // RandomHeuristic RH = new RandomHeuristic();
-    // ECT.generateTable(feedsl.getFeedList(), RH);
-    // printETC = true;
-    // }
-
-    // // printeo tabla
-    // if (printETC) {
-    // ECT.prettyPrint("Global");
-    // ECT.prettyPrint("Clase");
-    // }
-    System.out.println(AnsiColors.PURPLE + "PROGRAMA TERMINO LLEGO A SU FIN" + AnsiColors.RESET);
   }
 }
