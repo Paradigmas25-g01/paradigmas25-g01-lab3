@@ -111,7 +111,7 @@ public class FeedList {
 
       // Si es RSS o REDDIT entonces:
       String type = subscription.getUrlType().toLowerCase();
-      if (type.equals("rss") || type.equals("reddit")) {
+      if (type.equals("rss") /*|| type.equals("reddit")*/) { // lab 3 solo usa rss
 
         // Tomo la URL sin topicos
         String urlFormat = subscription.getUrl();
@@ -145,7 +145,7 @@ public class FeedList {
 
               this.feedList.add(feed); // agrego el feed a la feedlist
             }
-            /* CASO FEED REDDIT */
+            /*CASO FEED REDDIT:  Para el Lab 3 se simplifica el problema usando solo FeedRS
             else {
               tempFile = java.nio.file.Files.createTempFile("redditFeed", ".json");
               RedditParser parser = new RedditParser(); // A implementar
@@ -161,6 +161,8 @@ public class FeedList {
 
               this.feedList.add(feed); // agrego el feed a la feedlist
             }
+            */
+
 
           } catch (Exception e) {
             System.err.println("Error al procesar el feed RSS para el topic: " + topic);

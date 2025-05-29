@@ -85,6 +85,17 @@ public class RssParser extends GeneralParser {
 
           String title = item.getElementsByTagName("title").item(0).getTextContent();
           String description = item.getElementsByTagName("description").item(0).getTextContent().trim();
+
+          // LIMITAMOS EL LARGO DE 'description'
+          int maxLength = 300;
+          int cutIndex = description.indexOf("\n"); // busco la posicion del primer salto de linea
+          if (cutIndex == -1 || cutIndex > maxLength) { // si no hay salto de linea antes del maxlength cortamos en el maxlength
+              cutIndex = Math.min(description.length(), maxLength);
+          }
+          if (description.length() > cutIndex) { // si hay un salto de linea antes del maxlength, lo cortamos luego del salto
+              description = description.substring(0, cutIndex).trim() + "...";
+          }
+          
           String pubDate = item.getElementsByTagName("pubDate").item(0).getTextContent();
           String link = item.getElementsByTagName("link").item(0).getTextContent();
 
