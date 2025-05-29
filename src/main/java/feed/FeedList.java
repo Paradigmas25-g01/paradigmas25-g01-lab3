@@ -43,7 +43,7 @@ public class FeedList {
           // Obtengo el contenido del feed (articulos) como XML o JSON
           HttpRequester requester = new HttpRequester();
           String rawFeed = requester.getFeed(finalUrl);
-          
+          requester.shutdown();
 
           // Declaro un archivo temporal
           java.nio.file.Path tempFile;
