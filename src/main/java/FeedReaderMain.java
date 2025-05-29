@@ -65,7 +65,7 @@ public class FeedReaderMain {
     //
     SubscriptionParser subparser = new SubscriptionParser();
     subparser.parseFile("config/subscriptions.json");
-    //subparser.parseFile("config/subscriptionsLarge.json");
+    // subparser.parseFile("config/subscriptionsLarge.json");
 
     // INFO: 0.0
     // Crea una sesión de Spark en modo local (usa todos los núcleos de la máquina)
@@ -92,48 +92,45 @@ public class FeedReaderMain {
     // Notar que no uso reduce porque estaria perdiendo la nocion de que cada
     // feed habla de un siteName distinto... Collect los agrupa en una lista (Array)
     List<Feed> feedList = feed.collect();
-    for(Feed elem : feedList){
+    for (Feed elem : feedList) {
       elem.prettyPrint();
     }
 
-    //System.out.println(AnsiColors.CYAN + feedList.toString() + AnsiColors.RESET);
+    // System.out.println(AnsiColors.CYAN + feedList.toString() + AnsiColors.RESET);
 
-    // INFO: 2.1
-    // RDD con todos mis feeds obtenidos tras ejecutar las funciones map
-    // FeedList.buildFeed(ssi) esta en feeds para todo ss en subs
-    // "ssi = SingleSubscription_i"
-    JavaRDD<Feed> feeds = sc.parallelize(feedList);
+    // ----------------------------------------------------------
+    // Printeamos Named Entities (si hay flags)
+    // ----------------------------------------------------------
 
-    // // INFO: 2.2
-    // // Configuro el map del RDD, voy a mapear (\feed -> diccionario)
-    // // donde en ese diccionario estaran contadas las ocurrencias de las cosas del
-    // // feed.
-    // // Aca dicts es el output del mapeo
-    QuickHeuristic qh = new QuickHeuristic(); // hardcodeo por ahora
-    Function<Feed, Map<String, Integer>> buildCountDict = feed2 -> EntityCountTable.buildCountDict(feed2, qh);
-    JavaRDD<Map<String, Integer>> dicts = feeds.map(buildCountDict);
+    if (argumentos.contains("-ne")) {
 
-    // INFO: 2.3
-    // Voy a agrupar todos los diccionarios en un gran diccionario con todo sumado
-    // Notar que hago una copia en la lambda, Map es una interfaz HashMap si es
-    // instanciable
-    // INFO: ACA FALLA, getCategory da NULL o ALGO ASI
-    Map<String, Integer> finalDict = dicts.reduce((d1, d2) -> EntityCountTable.mergeCountDicts(d1, d2));
+      // INFO: 2.1
+      // RDD con todos mis feeds obtenidos tras ejecutar las funciones map
+      // FeedList.buildFeed(ssi) esta en feeds para todo ss en subs
+      // "ssi = SingleSubscription_i"
+      JavaRDD<Feed> feeds = sc.parallelize(feedList);
 
+      // // INFO: 2.2
+      // // Configuro el map del RDD, voy a mapear (\feed -> diccionario)
+      // // donde en ese diccionario estaran contadas las ocurrencias de las cosas del
+      // // feed.
+      // // Aca dicts es el output del mapeo
 
-    // // inicializo el requester y el feedlist
-    // HttpRequester requester = new HttpRequester();
-    // FeedList feedsl = new FeedList(); // crea el objeto e inicializa la lista
+      // TODO: Chequear
+      Heuristic h = argumentos.contains("-rh") ? new RandomHeuristic() : new QuickHeuristic(); // hardcodeo por ahora
+      Function<Feed, Map<String, Integer>> buildCountDict = feed2 -> EntityCountTable.buildCountDict(feed2, h);
+      JavaRDD<Map<String, Integer>> dicts = feeds.map(buildCountDict);
 
-    // obtengo los feeds
-    // nOTE: No pinta que buildfeeds tome subparser, mejor seria que tome una lista
-    // de SingleSubscriptions
-    // feedsl.BuildFeeds(subparser.getSubscriptions());
-    // printeo los feeds
-    // for (Feed f : feedsl.getFeedList()) {
-    // System.out.println("||||||| FEED: " + f.getSiteName() + " |||||||");
-    // f.prettyPrint();
-    // }
+      // INFO: 2.3
+      // Voy a agrupar todos los diccionarios en un gran diccionario con todo sumado
+      // Notar que hago una copia en la lambda, Map es una interfaz HashMap si es
+      // instanciable
+      // INFO: ACA FALLA, getCategory da NULL o ALGO ASI
+      Map<String, Integer> finalDict = dicts.reduce((d1, d2) -> EntityCountTable.mergeCountDicts(d1, d2));
+
+      // EntityCountTable ECT = new EntityCountTable()
+      EntityCountTable.prettyPrintCountDict(finalDict);
+    }
 
     // INFO: IMPORTANTISIMO
     sc.close();

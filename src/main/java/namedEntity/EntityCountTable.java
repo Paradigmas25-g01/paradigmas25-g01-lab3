@@ -194,31 +194,31 @@ public class EntityCountTable {
   }
 
   // ESTO ES LA PAPA
-public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
+  public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
     List<Tripla> triplista = new ArrayList<Tripla>();
     String name = null;
     String field = null;
     Integer frequency = null;
 
     for (Article art : f.getArticleList()) {
-        List<NamedEntity> namedEntitiesOfArticle = Article.buildListOfNamedEntities(art, h);
+      List<NamedEntity> namedEntitiesOfArticle = Article.buildListOfNamedEntities(art, h);
 
-        for (NamedEntity ne : namedEntitiesOfArticle) {
-            if (ne.getFrequency() > 0) {
-                name = ne.getName();
+      for (NamedEntity ne : namedEntitiesOfArticle) {
+        if (ne.getFrequency() > 0) {
+          name = ne.getName();
 
-                field = campo.getValor().equals("category") ? ne.getCategory() : ne.getTopic() ;
-                frequency = ne.getFrequency();
+          field = campo.getValor().equals("category") ? ne.getCategory() : ne.getTopic();
+          frequency = ne.getFrequency();
 
-                if (field != null) {
-                    Tripla tripla = new Tripla(name, field, frequency);
-                    triplista.add(tripla);
-                }
-            }
+          if (field != null) {
+            Tripla tripla = new Tripla(name, field, frequency);
+            triplista.add(tripla);
+          }
         }
+      }
     }
     return triplista;
-}
+  }
 
   // Dicconario papa
   // Persona 5
@@ -268,7 +268,6 @@ public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
   }
 
   // Dada una lista de entidades nombradas,
-
   public void prettyPrint(String parametro) {
     // Headers, filas y tabla de cada arbol en modo <parametro>
     String categoriasTabla = null;
@@ -358,83 +357,48 @@ public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
   }
 
   // TODO: Terminar...
-  public void prettyPrintCountDict(Map<String, Integer> d1, String parametro) {
+  public static void prettyPrintCountDict(Map<String, Integer> d) {
     // Headers, filas y tabla de cada arbol en modo <parametro>
-
-    // INFO: Tengo que generar estas pero para d1
-    // List<Tripla> entriesCat = ???;
-    // List<Tripla> entriesTopic = ???;
-
     String categoriasTabla = null;
     String topicosTabla = null;
 
-    if (parametro.equals("Global")) {
-      // Categorias
-      String[] headerCategorias = { "Nombre", "Categoria", "Ocurrencias" };
-      String[][] dataCategorias = new String[entriesCat.size()][3];
+    // proceso de listas para imprimir
+    List<Tupla> categories = new ArrayList();
+    List<Tupla> topics = new ArrayList();
 
-      // Popular entriesCat
-      for (int fila = 0; fila < entriesCat.size(); fila++) {
-        // Categorias
-        Tripla<?, ?, ?> tripla = entriesCat.get(fila);
-        dataCategorias[fila][0] = tripla.first.toString();
-        dataCategorias[fila][1] = tripla.second.toString();
-        dataCategorias[fila][2] = tripla.third.toString();
-        // topicos
-        tripla = entriesCat.get(fila);
+    for (String category : CATEGORY_KEYS) {
+      Integer frequency = d.get(category);
+      Tupla tuple = new Tupla(category, frequency);
+      if (frequency != 0) {
+        categories.add(tuple);
       }
-      categoriasTabla = FlipTable.of(headerCategorias, dataCategorias);
-      // Topicos
-      String[] headerTopicos = { "Nombre", "Topico", "Ocurrencias" };
-      String[][] dataTopicos = new String[entriesCat.size()][3];
-      for (int fila = 0; fila < entriesTopic.size(); fila++) {
-        Tripla<?, ?, ?> tripla = entriesTopic.get(fila);
-        dataTopicos[fila][0] = tripla.first.toString();
-        dataTopicos[fila][1] = tripla.second.toString();
-        dataTopicos[fila][2] = tripla.third.toString();
-      }
-      topicosTabla = FlipTable.of(headerTopicos, dataTopicos);
     }
 
-    else if (parametro.equals("Clase")) {
-      // proceso de listas para imprimir
-      List<Tupla> categories = new ArrayList();
-      List<Tupla> topics = new ArrayList();
-
-      for (String category : CATEGORY_KEYS) {
-        Integer frequency = Tabla.get(category);
-        Tupla tuple = new Tupla(category, frequency);
-        if (frequency != 0) {
-          categories.add(tuple);
-        }
+    for (String topic : TOPIC_KEYS) {
+      Integer frequency = d.get(topic);
+      Tupla tuple = new Tupla(topic, frequency);
+      if (frequency != 0) {
+        topics.add(tuple);
       }
-
-      for (String topic : TOPIC_KEYS) {
-        Integer frequency = Tabla.get(topic);
-        Tupla tuple = new Tupla(topic, frequency);
-        if (frequency != 0) {
-          topics.add(tuple);
-        }
-      }
-
-      // Categorías
-      String[] headerCategorias = { "Categoria", "Ocurrencias" };
-      String[][] dataCategorias = new String[categories.size()][2];
-      for (int fila = 0; fila < categories.size(); fila++) {
-        dataCategorias[fila][0] = categories.get(fila).first.toString();
-        dataCategorias[fila][1] = categories.get(fila).second.toString();
-      }
-      categoriasTabla = FlipTable.of(headerCategorias, dataCategorias);
-
-      // Tópicos
-      String[] headerTopicos = { "Topico", "Ocurrencias" };
-      String[][] dataTopicos = new String[topics.size()][2];
-      for (int fila = 0; fila < topics.size(); fila++) {
-        dataTopicos[fila][0] = topics.get(fila).first.toString();
-        dataTopicos[fila][1] = topics.get(fila).second.toString();
-      }
-      topicosTabla = FlipTable.of(headerTopicos, dataTopicos);
     }
+
+    // Categorías
+    String[] headerCategorias = { "Categoria", "Ocurrencias" };
+    String[][] dataCategorias = new String[categories.size()][2];
+    for (int fila = 0; fila < categories.size(); fila++) {
+      dataCategorias[fila][0] = categories.get(fila).first.toString();
+      dataCategorias[fila][1] = categories.get(fila).second.toString();
+    }
+    categoriasTabla = FlipTable.of(headerCategorias, dataCategorias);
+
+    // Tópicos
+    String[] headerTopicos = { "Topico", "Ocurrencias" };
+    String[][] dataTopicos = new String[topics.size()][2];
+    for (int fila = 0; fila < topics.size(); fila++) {
+      dataTopicos[fila][0] = topics.get(fila).first.toString();
+      dataTopicos[fila][1] = topics.get(fila).second.toString();
+    }
+    topicosTabla = FlipTable.of(headerTopicos, dataTopicos);
 
     // Imprimir tabla final combinada
     String[] headers = { "Zona de categorias", "Zona de topicos" };
