@@ -1,7 +1,10 @@
 package utils;
 
 // Definida como tipo generico
-public class Tripla<A, B, C> {
+
+import java.io.Serializable;
+
+public class Tripla<A, B, C> implements Serializable{
   public final A first;
   public final B second;
   public final C third;
@@ -11,4 +14,5 @@ public class Tripla<A, B, C> {
     this.second = second;
     this.third = third;
   }
+
 }

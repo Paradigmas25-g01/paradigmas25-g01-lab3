@@ -1,6 +1,8 @@
 package namedEntity;
 
-import namedEntity.category.*;
+import java.io.Serializable;
+
+import namedEntity.category.Category;
 import namedEntity.topic.Topic;
 
 /**
@@ -8,7 +10,7 @@ import namedEntity.topic.Topic;
  * Una entidad nombrada tiene un nombre, una categoria y una frecuencia de
  * aparicion.
  */
-public class NamedEntity {
+public class NamedEntity implements Serializable{
   public NamedEntity(String name, Category category, Topic topic, int frequency) {
     this.name = name;
     this.category = category;
@@ -24,7 +26,7 @@ public class NamedEntity {
 
   /**
    * Constructor de NamedEntity.
-   * 
+   *
    * @param name      nombre de la entidad
    * @param category  categoria o tipo de la entidad
    * @param frequency cantidad de apariciones de la entidad
@@ -32,7 +34,7 @@ public class NamedEntity {
 
   /**
    * Obtiene el nombre de la entidad.
-   * 
+   *
    * @return el nombre
    */
   public String getName() {
@@ -41,7 +43,7 @@ public class NamedEntity {
 
   /**
    * Establece el nombre de la entidad.
-   * 
+   *
    * @param name nuevo nombre
    */
   public void setName(String name) {
@@ -54,8 +56,13 @@ public class NamedEntity {
    * @return la categoria
    */
   public String getCategory() {
-    return category.getCategoria();
+    String cat =  category.getCategoria();
+    return (cat != null ? cat : "null");
   }
+
+  public Category getCategoryObject() { // Getter para el objeto Category
+        return this.category;
+    }
 
   /**
    * Establece la categoria de la entidad.
@@ -66,9 +73,11 @@ public class NamedEntity {
     this.category = category;
   }
 
+
+
   /**
    * Obtiene la frecuencia de aparicion de la entidad.
-   * 
+   *
    * @return la frecuencia
    */
   public int getFrequency() {
@@ -77,7 +86,7 @@ public class NamedEntity {
 
   /**
    * Establece la frecuencia de aparicion de la entidad.
-   * 
+   *
    * @param frequency nueva frecuencia
    */
   public void setFrequency(int frequency) {
@@ -91,9 +100,16 @@ public class NamedEntity {
     this.frequency++;
   }
 
-  public String getTopic() {
-    return topic.getType();
-  }
+  public String getTopic() { // Este es el que te da la representación String
+        if (this.topic != null) { // ¡Importante verificar por null aquí!
+            return this.topic.getType();
+        }
+        return "UnknownTopic"; // O null, o lanzar excepción
+    }
+
+    public Topic getTopicObject() { // Getter para el objeto Topic
+        return this.topic;
+    }
 
   @Override
   public String toString() {

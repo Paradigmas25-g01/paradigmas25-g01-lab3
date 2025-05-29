@@ -8,16 +8,15 @@ import java.util.Map;
 
 import com.jakewharton.fliptables.FlipTable;
 
-import utils.*;
 import feed.Article;
 import feed.Feed;
 import feed.FeedList;
 import httpRequest.HttpRequester;
-import namedEntity.category.Category;
 import namedEntity.heuristic.Heuristic;
 import namedEntity.heuristic.QuickHeuristic;
 import parser.SubscriptionParser;
 import utils.Tripla;
+import utils.Tupla;
 
 public class EntityCountTable {
 
@@ -174,14 +173,102 @@ public class EntityCountTable {
               // System.err.println("----------------------------------------------------------------------");
             }
           }
-
         }
       }
     }
   }
 
-  public void prettyPrint(String parametro) {
+  private enum Fields {
+    CATEGORY("category"),
+    TOPIC("topic");
 
+    private final String valor;
+
+    Fields(String str) {
+      this.valor = str;
+    }
+
+    public String getValor() {
+      return valor;
+    }
+  }
+
+  // ESTO ES LA PAPA
+  public static List<Tripla> generateEntries(Feed f, Heuristic h, Fields campo) {
+    List<Tripla> triplista = new ArrayList<Tripla>();
+    String name = null;
+    String field = null;
+    Integer frequency = null;
+
+    for (Article art : f.getArticleList()) {
+      List<NamedEntity> namedEntitiesOfArticle = Article.buildListOfNamedEntities(art, h);
+
+      for (NamedEntity ne : namedEntitiesOfArticle) {
+        if (ne.getFrequency() > 0) {
+          name = ne.getName();
+
+          field = campo.getValor().equals("category") ? ne.getCategory() : ne.getTopic();
+          frequency = ne.getFrequency();
+
+          if (field != null) {
+            Tripla tripla = new Tripla(name, field, frequency);
+            triplista.add(tripla);
+          }
+        }
+      }
+    }
+    return triplista;
+  }
+
+  // Dicconario papa
+  // Persona 5
+  // Football 4
+  public static Map<String, Integer> countDict(List<Tripla> catList, List<Tripla> topList) {
+    Map<String, Integer> d = new HashMap<>();
+
+    for (String cat : CATEGORY_KEYS) {
+      d.put(cat, 0);
+    }
+    for (String top : TOPIC_KEYS) {
+      d.put(top, 0);
+    }
+
+    for (Tripla<String, String, Integer> t : catList) {
+      d.put(t.second, d.get(t.second) + t.third);
+    }
+    for (Tripla<String, String, Integer> t : topList) {
+      d.put(t.second, d.get(t.second) + t.third);
+    }
+
+    return d;
+  }
+  // Messi 5
+
+  // Toma un feed y devuelve un diccionario con el conteo de todas las ne
+  public static Map<String, Integer> buildCountDict(Feed feed, Heuristic h) {
+    Map<String, Integer> d = new HashMap<String, Integer>();
+    List<Tripla> entriesCat = generateEntries(feed, h, Fields.CATEGORY);
+    List<Tripla> entriesTop = generateEntries(feed, h, Fields.TOPIC);
+
+    d = countDict(entriesCat, entriesTop);
+
+    // for (Article a : feed.getArticleList()) {
+    // for (NamedEntity ne : a.buildListOfNamedEntities(a, h)) { // INFO: ES MUY
+    // POLEMICO esto???
+
+    // String category = ne.getCategory();
+    // System.err.println("100200300aaa:" + category);
+    // if (category != null) {
+    // d.put(ne.getCategory(), d.get(category) + ne.getFrequency());
+    // }
+    // }
+    // }
+
+    return d;
+  }
+
+  // Dada una lista de entidades nombradas,
+  public void prettyPrint(String parametro) {
     // Headers, filas y tabla de cada arbol en modo <parametro>
     String categoriasTabla = null;
     String topicosTabla = null;
@@ -260,6 +347,65 @@ public class EntityCountTable {
     System.out.println(FlipTable.of(headers, data));
   }
 
+  // Funcion pura que mergea dos diccionarios
+  public static Map<String, Integer> mergeCountDicts(Map<String, Integer> d1, Map<String, Integer> d2) {
+    Map<String, Integer> d = new HashMap(d1);
+    for (Map.Entry<String, Integer> entry : d2.entrySet()) {
+      d.merge(entry.getKey(), entry.getValue(), Integer::sum);
+    }
+    return d;
+  }
+
+  // TODO: Terminar...
+  public static void prettyPrintCountDict(Map<String, Integer> d) {
+    // Headers, filas y tabla de cada arbol en modo <parametro>
+    String categoriasTabla = null;
+    String topicosTabla = null;
+
+    // proceso de listas para imprimir
+    List<Tupla> categories = new ArrayList();
+    List<Tupla> topics = new ArrayList();
+
+    for (String category : CATEGORY_KEYS) {
+      Integer frequency = d.get(category);
+      Tupla tuple = new Tupla(category, frequency);
+      if (frequency != 0) {
+        categories.add(tuple);
+      }
+    }
+
+    for (String topic : TOPIC_KEYS) {
+      Integer frequency = d.get(topic);
+      Tupla tuple = new Tupla(topic, frequency);
+      if (frequency != 0) {
+        topics.add(tuple);
+      }
+    }
+
+    // Categorías
+    String[] headerCategorias = { "Categoria", "Ocurrencias" };
+    String[][] dataCategorias = new String[categories.size()][2];
+    for (int fila = 0; fila < categories.size(); fila++) {
+      dataCategorias[fila][0] = categories.get(fila).first.toString();
+      dataCategorias[fila][1] = categories.get(fila).second.toString();
+    }
+    categoriasTabla = FlipTable.of(headerCategorias, dataCategorias);
+
+    // Tópicos
+    String[] headerTopicos = { "Topico", "Ocurrencias" };
+    String[][] dataTopicos = new String[topics.size()][2];
+    for (int fila = 0; fila < topics.size(); fila++) {
+      dataTopicos[fila][0] = topics.get(fila).first.toString();
+      dataTopicos[fila][1] = topics.get(fila).second.toString();
+    }
+    topicosTabla = FlipTable.of(headerTopicos, dataTopicos);
+
+    // Imprimir tabla final combinada
+    String[] headers = { "Zona de categorias", "Zona de topicos" };
+    String[][] data = { { categoriasTabla, topicosTabla } };
+    System.out.println(FlipTable.of(headers, data));
+  }
+
   public static void main(String[] args) {
     System.out.println("Compilo");
 
@@ -269,7 +415,7 @@ public class EntityCountTable {
     subParser.parseFile("config/subscriptions.json");
     HttpRequester requester = new HttpRequester();
 
-    feedl.BuildFeeds(subParser, requester);
+    feedl.BuildFeeds(subParser.getSubscriptions());
     List<Feed> feedlpapa = feedl.getFeedList();
     EntityCountTable ect = new EntityCountTable();
     ect.generateTable(feedlpapa, qh);

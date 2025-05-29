@@ -1,12 +1,13 @@
 package subscription;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import utils.AnsiColors;
 
 /*Esta clse abstrae el contenido de una sola suscripcion que ocurre en lista de suscripciones que figuran en el archivo de suscrpcion(json) */
-public class SingleSubscription {
+public class SingleSubscription implements Serializable {
 
   private String url;
   private List<String> urlParams;

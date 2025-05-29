@@ -1,5 +1,6 @@
 package feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,7 +13,7 @@ import utils.AnsiColors;
  * Clase que modela el contenido de un articulo (por ejemplo, un item en un feed
  * RSS).
  */
-public class Article {
+public class Article implements Serializable {
 
   /** Titulo del articulo */
   private String title;
@@ -169,6 +170,48 @@ public class Article {
     }
   }
 
+  public static List<NamedEntity> buildListOfNamedEntities(Article a, Heuristic h) {
+  List<NamedEntity> lne = new ArrayList<>();
+  String text = a.getTitle() + " " + a.getText();
+
+  String charsToRemove = ".,;:()'!?\n";
+  for (char c : charsToRemove.toCharArray()) {
+    text = text.replace(String.valueOf(c), "");
+  }
+
+  for (String s : text.split(" ")) {
+        if (h.isEntity(s)) {
+            NamedEntity existingNeInList = findInList(lne, s);
+
+            if (existingNeInList == null) {
+                NamedEntity entityFromHeuristic = h.getNamedEntity(s);
+
+                if (entityFromHeuristic != null) {
+                    NamedEntity newNe = new NamedEntity(
+                        entityFromHeuristic.getName(),
+                        entityFromHeuristic.getCategoryObject(),
+                        entityFromHeuristic.getTopicObject(),
+                        1
+                    );
+                    lne.add(newNe);
+                }
+            } else {
+                existingNeInList.incFrequency();
+            }
+        }
+    }
+    return lne;
+}
+private static NamedEntity findInList(List<NamedEntity> list, String name) {
+  for (NamedEntity ne : list) {
+    if (ne.getName().equals(name)) {
+      return ne;
+    }
+  }
+  return null;
+}
+
+
   /**
    * Imprime de forma legible el contenido del articulo.
    */
@@ -178,6 +221,20 @@ public class Article {
     String CYANB = AnsiColors.CYAN_BOLD;
     String GREEN = AnsiColors.GREEN;
     String CYAN = AnsiColors.CYAN;
+
+    String text = this.getText();
+
+
+    // Reciclo funcion de valen je
+    int maxLength = 300;
+    int cutIndex = text.indexOf("\n"); // busco la posicion del primer salto de linea
+    if (cutIndex == -1 || cutIndex > maxLength) { // si no hay salto de linea antes del maxlength cortamos en el maxlength
+        cutIndex = Math.min(text.length(), maxLength);
+    }
+    if (text.length() > cutIndex) { // si hay un salto de linea antes del maxlength, lo cortamos luego del salto
+        text = text.substring(0, cutIndex).trim() + "...";
+    }
+
     System.out.println(BLUE);
     System.out
         .println("*********************************************************************************");
@@ -188,7 +245,7 @@ public class Article {
     System.out.println(CYANB);
     System.out.println("Link: " + RESET + this.getLink());
     System.out.println(CYANB);
-    System.out.println("Text: " + RESET + this.getText());
+    System.out.println("Text: " + RESET + text);
     System.out.println(BLUE);
     System.out
         .println("*******************************************************************************************");

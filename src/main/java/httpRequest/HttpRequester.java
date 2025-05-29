@@ -8,6 +8,8 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Clase encargada de realizar peticiones HTTP para obtener feeds de noticias.
@@ -19,7 +21,26 @@ import java.net.http.HttpResponse;
  * https://www.baeldung.com/java-http-request
  * https://www.youtube.com/watch?v=tSKsDwsGVto
  */
+
 public class HttpRequester {
+  private final ExecutorService executor;
+  private final HttpClient client;
+
+  public HttpRequester() {
+
+    int cores = Runtime.getRuntime().availableProcessors();
+    int workers = cores;
+    // System.out.println(workers);
+
+    this.executor = Executors.newFixedThreadPool(workers);
+    this.client = HttpClient.newBuilder()
+        .executor(executor)
+        .build();
+  }
+
+  public void shutdown() {
+    executor.shutdown(); // libera los hilos
+  }
 
   /**
    * Realiza una petición HTTP GET a la URL especificada.
@@ -31,19 +52,20 @@ public class HttpRequester {
    * @throws InterruptedException si la operación es interrumpida
    */
   public String getFeed(String urlFeed) {
-    HttpClient client = HttpClient.newBuilder().build();
     HttpRequest request = null;
     HttpResponse<String> response = null;
 
     try {
-      request = HttpRequest.newBuilder(new URI(urlFeed)).GET().build();
+      request = HttpRequest.newBuilder(new URI(urlFeed))
+          .GET()
+          .build();
+
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
+      return response.body(); // devolver solo si no hubo excepción
     } catch (URISyntaxException | IOException | InterruptedException e) {
-      // INFO: Mejorar handeleo
       e.printStackTrace();
     }
-
-    return response.body();
+    return ""; // en caso de error
   }
 
   /**
