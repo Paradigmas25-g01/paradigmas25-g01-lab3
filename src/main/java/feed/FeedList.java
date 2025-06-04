@@ -29,11 +29,11 @@ public class FeedList {
 
   // Toma una SingleSubscription y devuelve un feed
   // static porque es una funcion pura
-  static public Feed buildFeed(SingleSubscription singSub) {
-    Feed feed = null;
+  static public List<Feed> buildTopicFeeds(SingleSubscription singSub) {
+    List<Feed> topicFeeds = new ArrayList<Feed>();
 
     String type = singSub.getUrlType().toLowerCase();
-    if (type.equals("rss") || type.equals("reddit")) {
+    if (type.equals("rss")) {
       String urlFormat = singSub.getUrl();
       for (String topic : singSub.getUrlParams()) {
         try {
@@ -47,36 +47,21 @@ public class FeedList {
 
           // Declaro un archivo temporal
           java.nio.file.Path tempFile;
+          
+          tempFile = java.nio.file.Files.createTempFile("rssFeed", ".xml"); // inicializo el archivo temp
+          RssParser parser = new RssParser(); // inicializo el parser
+          java.nio.file.Files.writeString(tempFile, rawFeed); // pongo el contenido en el archivo
+          parser.parseFile(tempFile.toString()); // parseo el archivo
 
-          /* CASO FEED RSS */
-          if (type.equals("rss")) {
-            tempFile = java.nio.file.Files.createTempFile("rssFeed", ".xml"); // inicializo el archivo temp
-            RssParser parser = new RssParser(); // inicializo el parser
-            java.nio.file.Files.writeString(tempFile, rawFeed); // pongo el contenido en el archivo
-            parser.parseFile(tempFile.toString()); // parseo el archivo
+          String siteName = singSub.getUrlType().toUpperCase() + " - " + topic;
+          Feed feed = new Feed(siteName);
 
-            String siteName = singSub.getUrlType().toUpperCase() + " - " + topic;
-            feed = new Feed(siteName);
-
-            for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
-              feed.addArticle(article);
-            }
+          for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
+            feed.addArticle(article);
           }
+          
+          topicFeeds.add(feed);
 
-          /* CASO FEED REDDIT */
-          else {
-            tempFile = java.nio.file.Files.createTempFile("redditFeed", ".json");
-            RedditParser parser = new RedditParser(); // A implementar
-            java.nio.file.Files.writeString(tempFile, rawFeed);
-            parser.parseFile(tempFile.toString());
-
-            String siteName = singSub.getUrlType().toUpperCase() + " - " + topic;
-            feed = new Feed(siteName);
-
-            for (Article article : parser.getArticlesArray()) { // agrego los articulos al feed
-              feed.addArticle(article);
-            }
-          }
         } catch (Exception e) {
           System.err.println("Error al procesar el feed RSS para el topic: " + topic);
           e.printStackTrace();
@@ -84,7 +69,7 @@ public class FeedList {
       }
     }
 
-    return feed;
+    return topicFeeds;
   }
 
   /**

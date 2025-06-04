@@ -1,6 +1,6 @@
-JAVA_HOME_PATH=/usr/lib/jvm/java-11-openjdk
-
-export JAVA_HOME := $(JAVA_HOME_PATH)
+JAVA_HOME_PATH=/usr/lib/jvm/java-11-openjdk-amd64
+JAVA_HOME := $(JAVA_HOME_PATH)
+export JAVA_HOME
 
 MVN = mvn clean compile exec:java
 MVN_FLAGS = -Dexec.mainClass="FeedReaderMain" --quiet

@@ -2,6 +2,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import utils.AnsiColors;
 import utils.Tupla;
@@ -82,18 +83,25 @@ public class FeedReaderMain {
     JavaRDD<SingleSubscription> subs = sc.parallelize(subparser.getSubscriptions());
 
     // INFO: 1.2
-    // Configuro el map del RDD, voy a mapear (\singSub -> Feed)
-    // Aca feed es el output del mapeo
-    Function<SingleSubscription, Feed> buildFeed = singSub -> FeedList.buildFeed(singSub);
-    JavaRDD<Feed> feed = subs.map(buildFeed);
+    // Configuro el map del RDD, voy a mapear (\singSub -> List<Feed>)
+    // Es decir, a partir de cada sub consigo una lista con los feeds por topico de esa sub.
+    JavaRDD<List<Feed>> feedsGroupedByTopic = subs.map(singSub -> FeedList.buildTopicFeeds(singSub));
+
+    List<Feed> feedList = new ArrayList<Feed>(); // solo para Named Entities
 
     // INFO: 1.3
     // Voy a agrupar todos los feeds a una lista de feeds
-    // Notar que no uso reduce porque estaria perdiendo la nocion de que cada
-    // feed habla de un siteName distinto... Collect los agrupa en una lista (Array)
-    List<Feed> feedList = feed.collect();
-    for (Feed elem : feedList) {
-      elem.prettyPrint();
+    // Notar que no uso reduce porque estaria perdiendo la nocion de que
+    // Cada singlesub tiene varios topicos... Collect los agrupa en una lista de listas
+    // Y luego se imprimen, tambien se agregan a una lista de feeds (necesaria para la funcion extra)
+
+    List<List<Feed>> feedListList = feedsGroupedByTopic.collect();
+    for (List <Feed> list : feedListList) {
+      for (Feed feed : list) {
+        feed.prettyPrint();
+
+        feedList.add(feed);
+      }
     }
 
     // System.out.println(AnsiColors.CYAN + feedList.toString() + AnsiColors.RESET);
@@ -108,6 +116,8 @@ public class FeedReaderMain {
       // RDD con todos mis feeds obtenidos tras ejecutar las funciones map
       // FeedList.buildFeed(ssi) esta en feeds para todo ss en subs
       // "ssi = SingleSubscription_i"
+      
+      
       JavaRDD<Feed> feeds = sc.parallelize(feedList);
 
       // // INFO: 2.2
