@@ -44,6 +44,7 @@ para entender como se trabaja en un framework y aprovechar sus herramientas; evi
 
 - se cierra sesión de spark
 
+
 2. **¿Por qué se decide usar Apache Spark para este proyecto?** ¿Qué necesidad concreta del problema resuelve?
 
 Pues tenemos 2 posibles cuellos de botellas al trabajar secuencialmente:
@@ -51,11 +52,29 @@ Pues tenemos 2 posibles cuellos de botellas al trabajar secuencialmente:
     - Procesamiento de NE
 Y Spark es ideal para paralelizar o hacer concurrentes procesos que no lo son, brindando eficiencia.
 
+
 3. **Liste las principales ventajas y desventajas que encontró al utilizar Spark.**
+
+Ventajas:
+- manejo de concurrencia y paralelizacion de alto nivel: con paralellize() nos podemos abstraer de sutilezas tales como particiones, asignaciones de trabajo, locks y región crítica.
+- modelo funcional claro: operaciones como map, filter, reduce son fáciles de componer.
+Desventajas:
+- costo de aprendizaje, al principio fue un poco dificil entender la lógica del framework
+
 
 4. **¿Cómo se aplica el concepto de inversión de control en este laboratorio?** Explique cómo y dónde se delega el control del flujo de ejecución. ¿Qué componentes deja de controlar el desarrollador directamente?
 
+En este laboratorio, la inversión de control se manifiesta en cómo Spark toma el control del flujo de ejecución de los datos. En lugar de que el desarrollador dicte explícitamente cómo se deben ejecutar los pasos (como en un código secuencial tradicional), Spark se encarga de decidir cuándo y cómo ejecutar transformaciones sobre los RDD.
+Por ejemplo, las operaciones sobre los RDD son lazy (evaluadas perezosamente) y solo se ejecutan cuando se aplica una acción como collect() o reduce().
+Además, delegamos el control de concurrencia y paralelismo a Spark, que decide cómo distribuir el trabajo entre los núcleos o nodos, a través de métodos como parallelize().
+El desarrollador deja de controlar directamente el orden exacto de ejecución, la gestión de hilos y sincronización, delegando esa responsabilidad al framework.
+
+
 5. **¿Considera que Spark requiere que el codigo original tenga una integración tight vs loose coupling?**
+
+Spark no requiere estrictamente que el código original esté diseñado con loose coupling, pero sí se ve altamente beneficiado por ello. Al trabajar con funciones que se pasan a operaciones como map, filter o reduce, es importante que estas funciones estén modularizadas y sean independientes del contexto externo, es decir, tengan bajo acoplamiento.
+Esto facilita su reutilización y adaptación al modelo distribuido de Spark. Si el código estuviera altamente acoplado (tight coupling), sería difícil modificar solo una parte sin afectar otras. Loose coupling también favorece el testeo, la extensibilidad y la integración con nuevos frameworks como Spark.
+
 
 6. **¿El uso de Spark afectó la estructura de su código original?** ¿Tuvieron que modificar significativamente clases, métodos o lógica de ejecución del laboratorio 2? 
 

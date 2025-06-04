@@ -127,9 +127,10 @@ public class FeedReaderMain {
       // // Aca dicts es el output del mapeo
 
       // TODO: Chequear
+      // Configuro Euristica segun el argumento
       Heuristic h = argumentos.contains("-rh") ? new RandomHeuristic() : new QuickHeuristic(); // hardcodeo por ahora
-      Function<Feed, Map<String, Integer>> buildCountDict = feed2 -> EntityCountTable.buildCountDict(feed2, h);
-      JavaRDD<Map<String, Integer>> dicts = feeds.map(buildCountDict);
+      
+      JavaRDD<Map<String, Integer>> dicts = feeds.map(feed2 -> EntityCountTable.buildCountDict(feed2, h));
 
       // INFO: 2.3
       // Voy a agrupar todos los diccionarios en un gran diccionario con todo sumado
